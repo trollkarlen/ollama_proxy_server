@@ -1,0 +1,103 @@
+---
+name: run tox test
+
+"on":
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  tests:
+    strategy:
+      max-parallel: 6
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]  # , "3.14"]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Set up the cache
+        uses: actions/cache@v4
+        env:
+          cache-name: cache-python-packages
+        with:
+          path: .venv
+          key: ${{ matrix.os }}-${{ matrix.python-version }}-${{ env.cache-name }}
+          restore-keys: |
+            ${{ matrix.os }}-${{ matrix.python-version }}-
+            ${{ matrix.os }}-
+
+      - name: Set up the project
+        run: |
+          pip install poetry tox
+          # poetry config virtualenvs.in-project true
+
+      - name: Run the test suite
+        run: tox -e py${{ matrix.python-version }}-test
+
+      - name: Archive coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-coverage-report-${{ matrix.os }}-${{ matrix.python-version }}
+          path: coverage.xml
+
+  windows-tests:
+    strategy:
+      max-parallel: 6
+      matrix:
+        os: [windows-latest]
+        # windows have issues with fast timers prior to python 3.13 so ignore the old pythons
+        python-version: ["3.13"]  # , "3.14"]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Set up the cache
+        uses: actions/cache@v4
+        env:
+          cache-name: cache-python-packages
+        with:
+          path: .venv
+          key: ${{ matrix.os }}-${{ matrix.python-version }}-${{ env.cache-name }}
+          restore-keys: |
+            ${{ matrix.os }}-${{ matrix.python-version }}-
+            ${{ matrix.os }}-
+
+      - name: Set up the project
+        run: |
+          pip install poetry tox
+          # poetry config virtualenvs.in-project true
+
+      - name: Run the test suite
+        run: tox -e py${{ matrix.python-version }}-test
+        # run: tox -f test -l | tr '\n' ',' | xargs tox -e
+
+      - name: Archive coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-coverage-report-${{ matrix.os }}-${{ matrix.python-version }}
+          path: coverage.xml

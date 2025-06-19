@@ -1,0 +1,82 @@
+---
+name: run quality tests
+
+"on":
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+
+  quality:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.13
+
+      - name: Set up the cache
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: cache-python-packages
+
+      - name: Set up the project
+        run: |
+          pip install poetry safety tox
+          # poetry config virtualenvs.in-project true
+
+      - name: Run ruff lint
+        run: tox -e lint
+
+      - name: Run pylint
+        run: tox -e pylint
+
+  code-saftey:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out master
+        uses: actions/checkout@v4
+
+      - name: Assign variable
+        id: safety_api_key
+        run: echo '::set-output name=secret::${{secrets.SAFETY_API_KEY}}'
+
+      - name: Run Safety CLI to check for vulnerabilities
+        if: steps.secret.outputs.safety_api_key
+        uses: pyupio/safety-action@v1
+        with:
+          # api-key: ${{ secrets.SAFETY_API_KEY }}
+          # To always see detailed output from this action
+          args: --detailed-output
+        env:  # Or as an environment variable
+          SAFETY_API_KEY: ${{ secrets.SAFETY_API_KEY }}
+
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out master
+        uses: actions/checkout@v4
+
+      - uses: ConorMacBride/install-package@v1
+        with:
+          apt: shellcheck
+
+      # - name: install shellcheck
+      #  run: apt install shellcheck
+
+      - name: Run shellcheck
+        run: |
+          ./scripts/run-shellcheck.sh

@@ -15,6 +15,7 @@ def read_requirements(path: Union[str, Path]):
 requirements = read_requirements("requirements.txt")
 requirements_dev = read_requirements("requirements_dev.txt")
 
+print(requirements)
 
 setuptools.setup(
     name="ollama_proxy_server",
@@ -25,16 +26,17 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/ParisNeo/ollama_proxy_server",
-    packages=setuptools.find_packages(),  
+    packages=setuptools.find_packages(),
     include_package_data=True,
+    package_data={"mypkg": ["*.txt", "*.rst"]},
     install_requires=requirements,
     entry_points={
-        'console_scripts': [
-            'ollama_proxy_server = ollama_proxy_server.main:main',
-            'ollama_proxy_add_user = ollama_proxy_server.add_user:main',
+        "console_scripts": [
+            "ollama_proxy_server = ollama_proxy_server.main:main",
+            "ollama_proxy_add_user = ollama_proxy_server.add_user:main",
         ],
     },
-    extras_require={"dev": requirements_dev},
+    # extras_require={"dev": requirements_dev},
     classifiers=[
         "Programming Language :: Python :: 3.11",
         "License :: OSI Approved :: Apache Software License",

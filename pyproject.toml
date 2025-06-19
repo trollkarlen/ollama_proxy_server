@@ -1,0 +1,37 @@
+[project]
+name = "ollama-proxy-server"
+version = "7.1.1"
+description = "A proxy for ollama instances, local and remote"
+authors = [
+    {name = "aloui.saifeddine@gmail.com"}
+]
+license = {text = "License :: OSI Approved :: Apache Software License"}
+readme = "README.md"
+requires-python = ">=3.9,<=3.14"
+dependencies = [
+    "configparser (==7.2.0)",
+    "queues (==0.6.3)",
+    "requests (==2.32.4)",
+    "urllib3 (==2.4.0)",
+    "pyjwt (==2.10.1)"
+]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[project.scripts]
+ollama_proxy_server = "ollama_proxy_server.main:main"
+ollama_proxy_add_user = "ollama_proxy_server.add_user:main"
+
+[tool.poetry.requires-plugins]
+poetry-plugin-export = ">=1.8"
+
+[tool.poetry.group.dev.dependencies]
+tox = "^4.26.0"
+pylint = "^3.3.7"
+ruff = "^0.11.13"
+poetry = "^2.1.3"
+pytest = "^8.4.0"
+pytest-cov = "^6.2.1"
+
